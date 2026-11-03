@@ -1,76 +1,89 @@
-<!DOCTYPE html>
-<html lang="en-GB">
+﻿<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Task Flow - Internship Assessment</title>
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Board</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-container">
-    <header class="app-header">
-      <h1>Task Flow Board</h1>
-      <p>Organise and track your project tasks efficiently.</p>
-    </header>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>Task Board</h1>
+            <p>Organise and track your project tasks.</p>
+        </header>
+        <!-- Creation Form -->
+        <main>
+            <section class="controls-section">
+                <form id="task-form" class="task-form">
+                    <div class="form-field">
+                        <input type="text" id="task-title" name="title"
+                            placeholder="Create task here:" required>
+                    </div>
 
-    <!-- Controls & Creation Section -->
-    <section class="controls-section">
-      <form id="task-form" class="task-form">
-        <input type="text" id="task-title" placeholder="Task title..." required />
-        <select id="task-category" required>
-          <option value="" disabled selected>Select Category</option>
-          <option value="Development">Development</option>
-          <option value="Design">Design</option>
-          <option value="Marketing">Marketing</option>
-        </select>
-        <select id="task-priority" required>
-          <option value="" disabled selected>Select Priority</option>
-          <option value="Low">Low Priority</option>
-          <option value="Medium">Medium Priority</option>
-          <option value="High">High Priority</option>
-        </select>
-        <button type="submit" class="btn btn-primary">Add Task</button>
-      </form>
+                    <div class="form-field">
+                        <textarea id="task-description" name="description" rows="3"
+                            placeholder="Additional information:"></textarea>
+                    </div>
 
-      <div class="filter-bar">
-        <input type="text" id="search-input" placeholder="Search tasks..." />
-        <select id="category-filter">
-          <option value="All">All Categories</option>
-          <option value="Development">Development</option>
-          <option value="Design">Design</option>
-          <option value="Marketing">Marketing</option>
-        </select>
-      </div>
-    </section>
+                    <div class="form-field">
+                        <select id="task-category" name="category">
+                            <option value="" disabled selected>Select a category</option>
+                            <option value="Development">Development</option>
+                            <option value="Design">Design</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
+                    </div>
 
-    <!-- Kanban Columns -->
-    <main class="board-container">
-      <div class="column" data-status="todo">
-        <div class="column-header">
-          <h2>To Do</h2>
-          <span class="task-count" id="count-todo">0</span>
-        </div>
-        <div class="task-list" id="list-todo"></div>
-      </div>
+                    <div class="form-field">
+                        <select id="task-priority" name="priority">
+                            <option value="" disabled selected>Select a priority</option>
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
 
-      <div class="column" data-status="in-progress">
-        <div class="column-header">
-          <h2>In Progress</h2>
-          <span class="task-count" id="count-in-progress">0</span>
-        </div>
-        <div class="task-list" id="list-in-progress"></div>
-      </div>
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </form>
+            </section>
 
-      <div class="column" data-status="completed">
-        <div class="column-header">
-          <h2>Completed</h2>
-          <span class="task-count" id="count-completed">0</span>
-        </div>
-        <div class="task-list" id="list-completed"></div>
-      </div>
-    </main>
-  </div>
+            <!-- Search and filters -->
+                <div class="filter-bar">
+                    <div class="form-field">
+                        <input type="search" id="search-input" placeholder="Search tasks...">
+                    </div>
 
-  <script src="script.js"></script>
+                    <div class="form-field">
+                        <select id="category-filter">
+                            <option value="All">All Categories</option>
+                            <option value="Development">Development</option>
+                            <option value="Design">Design</option>
+                            <option value="Marketing">Marketing</option>
+                        </select>
+                    </div>
+                </div>
+
+            <!-- Task board -->
+            <div class="board-container">
+                <section class="column" data-status="todo" aria-labelledby="todo-heading">
+                    <h2 id="todo-heading">To Do</h2>
+                    <div class="task-list" id="list-todo"></div>
+                </section>
+
+                <section class="column" data-status="in-progress" aria-labelledby="progress-heading">
+                    <h2 id="progress-heading">In Progress</h2>
+                    <div class="task-list" id="list-in-progress"></div>
+                </section>
+
+                <section class="column" data-status="completed" aria-labelledby="completed-heading">
+                    <h2 id="completed-heading">Completed</h2>
+                    <div class="task-list" id="list-completed"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
