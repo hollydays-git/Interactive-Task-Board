@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -17,17 +17,17 @@
             <section class="controls-section">
                 <form id="task-form" class="task-form">
                     <div class="form-field">
-                        <input type="text" id="task-title" name="title"
+                        <input type="text" id="task-title" aria-label="Task title" name="title"
                             placeholder="Create task here:" required>
                     </div>
 
                     <div class="form-field">
-                        <textarea id="task-description" name="description" rows="3"
+                        <textarea id="task-description" aria-label="Task description" name="description" rows="3"
                             placeholder="Additional information:"></textarea>
                     </div>
 
                     <div class="form-field">
-                        <select id="task-category" name="category">
+                        <select id="task-category" aria-label="Task category" required name="category">
                             <option value="" disabled selected>Select a category</option>
                             <option value="Development">Development</option>
                             <option value="Design">Design</option>
@@ -36,7 +36,7 @@
                     </div>
 
                     <div class="form-field">
-                        <select id="task-priority" name="priority">
+                        <select id="task-priority" aria-label="Task priority" required name="priority">
                             <option value="" disabled selected>Select a priority</option>
                             <option value="Low">Low</option>
                             <option value="Medium">Medium</option>
@@ -51,11 +51,11 @@
             <!-- Search and filters -->
                 <div class="filter-bar">
                     <div class="form-field">
-                        <input type="search" id="search-input" placeholder="Search tasks...">
+                        <input type="search" id="search-input" aria-label="Search tasks by title" placeholder="Search tasks...">
                     </div>
 
                     <div class="form-field">
-                        <select id="category-filter">
+                        <select id="category-filter" aria-label="Filter tasks by category">
                             <option value="All">All Categories</option>
                             <option value="Development">Development</option>
                             <option value="Design">Design</option>
@@ -64,6 +64,7 @@
                     </div>
                 </div>
 
+            <p id="results-message" class="results-message" role="status" aria-live="polite"></p>
             <!-- Task board -->
             <div class="board-container">
                 <section class="column" data-status="todo" aria-labelledby="todo-heading">
