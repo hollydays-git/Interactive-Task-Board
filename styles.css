@@ -1,15 +1,16 @@
 /* Shared colours and sizes */
 :root {
+    color-scheme: light;
     --white: #ffffff;
     --primary-bg: var(--white);
     --secondary-bg: var(--white);
     --text-on-accent: var(--white);
     --text-main: #020202;
-    --text-muted: #46594a;
-    --accent-color: #246b38;
-    --accent-hover: #19502a;
-    --border-color: #ccdace;
-    --field-bg: #f8fbf8;
+    --text-muted: #616161;
+    --accent-color: #262626;
+    --accent-hover: #404040;
+    --border-color: #d6d6d6;
+    --field-bg: #f7f7f7;
     --transparent-color: transparent;
     --shadow-color: rgba(0, 0, 0, 0.1);
 
@@ -28,6 +29,21 @@
     --danger-hover-bg: #ffd8d2;
     --border-radius: 8px;
     --box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+html[data-theme="dark"] {
+    --accent-color: #eeeeee;
+    --accent-hover: #d4d4d4;
+    --text-on-accent: #121212;
+    --primary-bg: #121212;
+    --secondary-bg: #1e1e1e;
+    --field-bg: #292929;
+    --text-main: #f5f5f5;
+    --text-muted: #bdbdbd;
+    --border-color: #474747;
+    --shadow-color: rgba(0, 0, 0, 0.35);
+
+    color-scheme: dark;
 }
 
 /* Include borders and padding in an element's width. */
@@ -351,4 +367,47 @@ button:focus-visible {
     background-color: var(--priority-medium-bg);
     color: var(--priority-medium-text);
     overflow-wrap: anywhere;
+}
+
+/* Accessible theme switch */
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    margin-top: 16px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: var(--secondary-bg);
+    color: var(--text-main);
+}
+
+.theme-track {
+    display: inline-flex;
+    align-items: center;
+    width: 44px;
+    height: 24px;
+    padding: 3px;
+    border-radius: 24px;
+    background: var(--text-muted);
+}
+
+.theme-track::before {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--white);
+}
+
+.theme-toggle[aria-checked="true"] .theme-track {
+    background: var(--accent-color);
+}
+
+.theme-toggle[aria-checked="true"] .theme-track::before {
+    transform: translateX(20px);
+}
+.theme-toggle[aria-checked="true"] .theme-track::before {
+    background: var(--text-on-accent);
 }
