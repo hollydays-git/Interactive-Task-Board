@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,6 +11,11 @@
         <header class="app-header">
             <h1>Task Board</h1>
             <p>Organise and track your project tasks.</p>
+            <button type="button" id="theme-toggle" class="theme-toggle" role="switch" aria-checked="false">
+                <span>Dark mode</span>
+                <span class="theme-track" aria-hidden="true"></span>
+            </button>
+            <p id="theme-message" role="status" hidden></p>
         </header>
         <!-- Creation Form -->
         <main>
