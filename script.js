@@ -291,3 +291,35 @@ categoryFilter.addEventListener('change', renderTasks);
 // 10. Load tasks, then render.
 loadTasks();
 renderTasks();
+// 11. Switch themes and remember the selection.
+const themeToggle = document.getElementById('theme-toggle');
+const themeMessage = document.getElementById('theme-message');
+
+function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    themeToggle.setAttribute('aria-checked', String(theme === 'dark'));
+}
+
+let savedTheme = 'light';
+try {
+    if (localStorage.getItem('theme') === 'dark') {
+        savedTheme = 'dark';
+    }
+} catch {
+    // Use the light theme if browser storage is unavailable.
+}
+applyTheme(savedTheme);
+
+themeToggle.addEventListener('click', function () {
+    const theme = document.documentElement.dataset.theme === 'dark'
+        ? 'light' : 'dark';
+    applyTheme(theme);
+
+    try {
+        localStorage.setItem('theme', theme);
+        themeMessage.hidden = true;
+    } catch {
+        themeMessage.textContent = 'Theme changed, but your preference could not be saved.';
+        themeMessage.hidden = false;
+    }
+});
