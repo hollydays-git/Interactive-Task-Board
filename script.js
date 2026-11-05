@@ -1,129 +1,293 @@
-// Application State
-let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+// 1. Get DOM elements.
+const form = document.getElementById('task-form');
+const titleInput = document.getElementById('task-title');
+const descriptionInput = document.getElementById('task-description');
+const categoryInput = document.getElementById('task-category');
+const priorityInput = document.getElementById('task-priority');
 
-// DOM Element References
-const taskForm = document.getElementById('task-form');
-const taskTitle = document.getElementById('task-title');
-const taskCategory = document.getElementById('task-category');
-const taskPriority = document.getElementById('task-priority');
 const searchInput = document.getElementById('search-input');
 const categoryFilter = document.getElementById('category-filter');
+const resultsMessage = document.getElementById('results-message');
+const storageMessage = document.getElementById('storage-message');
 
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-  renderTasks();
-  
-  taskForm.addEventListener('submit', handleAddTask);
-  searchInput.addEventListener('input', renderTasks);
-  categoryFilter.addEventListener('change', renderTasks);
+// Map statuses to task lists.
+const lists = {
+    todo: document.getElementById('list-todo'),
+    'in-progress': document.getElementById('list-in-progress'),
+    completed: document.getElementById('list-completed')
+};
+
+// Display labels for stored statuses.
+const statuses = {
+    todo: 'To Do',
+    'in-progress': 'In Progress',
+    completed: 'Completed'
+};
+
+// Source data; filters never delete tasks.
+let tasks = [];
+// Protect saved data if loading fails.
+let canSave = true;
+
+// 2. Load saved tasks.
+function loadTasks() {
+    try {
+        const saved = localStorage.getItem('tasks');
+
+        // No saved data on the first visit.
+        if (saved === null) {
+            return;
+        }
+
+        const loadedTasks = JSON.parse(saved);
+
+        if (!Array.isArray(loadedTasks)) {
+            throw new Error('Invalid data');
+        }
+
+        // Check fields and reject duplicate IDs.
+        const ids = new Set();
+
+        for (const task of loadedTasks) {
+            if (
+                task === null ||
+                typeof task !== 'object' ||
+                typeof task.id !== 'string' ||
+                task.id === '' ||
+                ids.has(task.id) ||
+                typeof task.title !== 'string' ||
+                task.title.trim() === '' ||
+                !['Development', 'Design', 'Marketing'].includes(task.category) ||
+                !['Low', 'Medium', 'High'].includes(task.priority) ||
+                !Object.hasOwn(statuses, task.status) ||
+                (task.description !== undefined &&
+                    typeof task.description !== 'string')
+            ) {
+                throw new Error('Invalid task');
+            }
+
+            ids.add(task.id);
+        }
+
+        // Apply data only after validation.
+        tasks = loadedTasks;
+    } catch {
+        // Keep existing storage untouched on failure.
+        canSave = false;
+        showStorageError(
+            'Could not load saved tasks. Changes will not be saved.'
+        );
+    }
+}
+
+// 3. Save all tasks after changes.
+function saveTasks() {
+    if (!canSave) {
+        return;
+    }
+
+    try {
+        // Store the array as a JSON string.
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        storageMessage.hidden = true;
+    } catch {
+        showStorageError(
+            'Could not save changes. Keep this page open.'
+        );
+    }
+}
+
+// Show an accessible storage error.
+function showStorageError(text) {
+    storageMessage.textContent = text;
+    storageMessage.hidden = false;
+}
+
+// 4. Validate and add a To Do task.
+form.addEventListener('submit', function (event) {
+    // Prevent page reload on submit.
+    event.preventDefault();
+
+    const title = titleInput.value.trim();
+
+    // Reject whitespace-only titles.
+    titleInput.setCustomValidity(
+        title === '' ? 'Enter a task title.' : ''
+    );
+
+    if (!form.reportValidity()) {
+        return;
+    }
+
+    const task = {
+        // Use a unique ID, independent of the title.
+        id: crypto.randomUUID(),
+        title: title,
+        description: descriptionInput.value.trim(),
+        category: categoryInput.value,
+        priority: priorityInput.value,
+        status: 'todo'
+    };
+
+    tasks.push(task);
+
+    saveTasks();
+    renderTasks();
+    form.reset();
+    titleInput.focus();
 });
 
-// Save tasks to localStorage
-function saveTasks() {
-  localStorage.setItem('tasks', JSON.stringify(tasks));
-}
+// Clear the validation error while typing.
+titleInput.addEventListener('input', function () {
+    titleInput.setCustomValidity('');
+});
 
-// Add a new task
-function handleAddTask(e) {
-  e.preventDefault();
-
-  const newTask = {
-    id: Date.now().toString(),
-    title: taskTitle.value.trim(),
-    category: taskCategory.value,
-    priority: taskPriority.value,
-    status: 'todo'
-  };
-
-  tasks.push(newTask);
-  saveTasks();
-  renderTasks();
-
-  // Reset form fields
-  taskForm.reset();
-}
-
-// Update status of a task
-function updateTaskStatus(id, newStatus) {
-  tasks = tasks.map(task => 
-    task.id === id ? { ...task, status: newStatus } : task
-  );
-  saveTasks();
-  renderTasks();
-}
-
-// Delete a task
-function deleteTask(id) {
-  tasks = tasks.filter(task => task.id !== id);
-  saveTasks();
-  renderTasks();
-}
-
-// Render tasks onto the board based on status and filters
-function renderTasks() {
-  const searchTerm = searchInput.value.toLowerCase();
-  const selectedCategory = categoryFilter.value;
-
-  // Clear lists
-  const lists = {
-    'todo': document.getElementById('list-todo'),
-    'in-progress': document.getElementById('list-in-progress'),
-    'completed': document.getElementById('list-completed')
-  };
-
-  Object.values(lists).forEach(list => list.innerHTML = '');
-
-  // Track counts
-  const counts = { 'todo': 0, 'in-progress': 0, 'completed': 0 };
-
-  // Filter tasks
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm);
-    const matchesCategory = selectedCategory === 'All' || task.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  // Append elements
-  filteredTasks.forEach(task => {
-    counts[task.status]++;
-    const cardHtml = createTaskCard(task);
-    if (lists[task.status]) {
-      lists[task.status].appendChild(cardHtml);
+// 5. Update status by task ID.
+function changeStatus(id, status) {
+    for (const task of tasks) {
+        if (task.id === id) {
+            task.status = status;
+            break;
+        }
     }
-  });
 
-  // Update counts in DOM
-  document.getElementById('count-todo').textContent = counts['todo'];
-  document.getElementById('count-in-progress').textContent = counts['in-progress'];
-  document.getElementById('count-completed').textContent = counts['completed'];
+    saveTasks();
+    renderTasks();
+
+    // Restore keyboard focus after rendering.
+    document.getElementById('status-' + id)?.focus();
 }
 
-// Helper: Create Task DOM element
-function createTaskCard(task) {
-  const card = document.createElement('div');
-  card.className = 'task-card';
-  card.setAttribute('data-priority', task.priority);
+// 6. Delete by ID; titles may repeat.
+function deleteTask(id) {
+    tasks = tasks.filter(function (task) {
+        return task.id !== id;
+    });
 
-  card.innerHTML = `
-    <div class="task-card-title">${escapeHtml(task.title)}</div>
-    <div class="task-meta">
-      <span>${task.category}</span>
-      <span>${task.priority} Priority</span>
-    </div>
-    <div class="task-actions">
-      <select onchange="updateTaskStatus('${task.id}', this.value)">
-        <option value="todo" ${task.status === 'todo' ? 'selected' : ''}>To Do</option>
-        <option value="in-progress" ${task.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
-        <option value="completed" ${task.status === 'completed' ? 'selected' : ''}>Completed</option>
-      </select>
-      <button class="btn-danger" onclick="deleteTask('${task.id}')">Delete</button>
-    </div>
-  `;
-
-  return card;
+    saveTasks();
+    renderTasks();
+    titleInput.focus();
 }
 
-// Security: Helper function to escape basic HTML injection
-function escapeHtml(str) {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+// 7. Build a card and its controls.
+function createCard(task) {
+    const card = document.createElement('article');
+    card.className = 'task-card';
+    // Set the CSS priority colours.
+    card.dataset.priority = task.priority;
+
+    const title = document.createElement('h3');
+    // Display user input as text, not HTML.
+    title.textContent = task.title;
+    card.append(title);
+
+    // Skip empty descriptions.
+    if (task.description) {
+        const description = document.createElement('p');
+        description.className = 'task-description';
+        description.textContent = task.description;
+        card.append(description);
+    }
+
+    const meta = document.createElement('div');
+    meta.className = 'task-meta';
+
+    const category = document.createElement('span');
+    category.textContent = task.category;
+
+    const priority = document.createElement('span');
+    priority.className = 'priority-badge';
+    // Show priority with text as well as colour.
+    priority.textContent = task.priority + ' Priority';
+
+    meta.append(category, priority);
+
+    const actions = document.createElement('div');
+    actions.className = 'task-actions';
+
+    const select = document.createElement('select');
+    select.id = 'status-' + task.id;
+    // Name the control for screen readers.
+    select.setAttribute('aria-label', 'Status for ' + task.title);
+
+    for (const status in statuses) {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = statuses[status];
+        select.append(option);
+    }
+
+    select.value = task.status;
+
+    select.addEventListener('change', function () {
+        changeStatus(task.id, select.value);
+    });
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-danger';
+    button.textContent = 'Delete';
+    button.setAttribute('aria-label', 'Delete ' + task.title);
+
+    button.addEventListener('click', function () {
+        deleteTask(task.id);
+    });
+
+    actions.append(select, button);
+    card.append(meta, actions);
+
+    return card;
 }
+
+// 8. Render tasks matching both filters.
+function renderTasks() {
+    // Ignore surrounding spaces and letter case.
+    const query = searchInput.value.trim().toLowerCase();
+    const category = categoryFilter.value;
+    let visibleCount = 0;
+
+    // Clear previous cards and messages.
+    for (const status in lists) {
+        lists[status].replaceChildren();
+    }
+
+    for (const task of tasks) {
+        const matchesTitle = task.title.toLowerCase().includes(query);
+        const matchesCategory =
+            category === 'All' || task.category === category;
+
+        // Match both filters without changing stored tasks.
+        if (matchesTitle && matchesCategory) {
+            const card = createCard(task);
+            lists[task.status].append(card);
+            visibleCount++;
+        }
+    }
+
+    // Distinguish empty lists from filtered-out tasks.
+    for (const status in lists) {
+        if (lists[status].children.length === 0) {
+            const message = document.createElement('p');
+            message.className = 'empty-state';
+
+            if (query !== '' || category !== 'All') {
+                message.textContent = 'No matching tasks.';
+            } else {
+                message.textContent = 'No tasks yet.';
+            }
+
+            lists[status].append(message);
+        }
+    }
+
+    resultsMessage.textContent =
+        'Showing ' + visibleCount + ' of ' + tasks.length + ' tasks.';
+}
+
+// 9. Update results when filters change.
+searchInput.addEventListener('input', renderTasks);
+categoryFilter.addEventListener('change', renderTasks);
+
+// 10. Load tasks, then render.
+loadTasks();
+renderTasks();
